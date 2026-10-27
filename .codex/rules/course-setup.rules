@@ -1,0 +1,29 @@
+# Lets Codex run the course's own setup scripts without asking each time:
+# checking the setup, saving work to GitHub, and copying in earlier work.
+# They need the network and the student's GitHub sign-in, which Codex's
+# sandbox blocks, so without this rule every check and save asks for approval.
+#
+# Only these three exact commands are allowed, run from the top of the course
+# folder. Codex loads this file only after the student trusts the folder.
+# On Windows, Codex runs the scripts through Git Bash's full path, which this
+# rule doesn't match, so there Codex asks for approval instead.
+prefix_rule(
+    pattern = ["bash", [
+        ".agents/skills/course-setup/scripts/checkup.sh",
+        ".agents/skills/course-setup/scripts/save.sh",
+        ".agents/skills/course-setup/scripts/copy-in.sh",
+    ]],
+    decision = "allow",
+    justification = "The course's own setup scripts: check the setup, save work to GitHub, copy in earlier work.",
+    match = [
+        "bash .agents/skills/course-setup/scripts/checkup.sh",
+        "bash .agents/skills/course-setup/scripts/checkup.sh record pass pass",
+        ["bash", ".agents/skills/course-setup/scripts/save.sh", "Module 2 wrap-up"],
+        ["bash", ".agents/skills/course-setup/scripts/copy-in.sh", "/Users/student/codex-for-pms-final-old"],
+    ],
+    not_match = [
+        "bash other.sh",
+        "bash -c rm",
+        "bash ./.agents/skills/course-setup/scripts/save.sh",
+    ],
+)
