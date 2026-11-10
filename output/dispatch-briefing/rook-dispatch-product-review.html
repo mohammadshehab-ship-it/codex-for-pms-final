@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rook Dispatch | Product review and 4.3</title>
+<style>
+:root{color-scheme:dark;--bg:#102127;--panel:#162c33;--ink:#f5f5ec;--dim:#bed0ce;--mint:#8aead0;--coral:#ffb39c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:clamp(16px,2.1vw,24px)/1.45 system-ui,sans-serif}
+main{max-width:1150px;margin:auto;padding:clamp(22px,6vw,78px)}section{min-height:70vh}h1,h2{line-height:1.06;letter-spacing:-.045em;margin:.4em 0 .55em;font-size:clamp(36px,6vw,76px)}h2{font-size:clamp(30px,4.8vw,57px)}h3{margin:.2em 0;font-size:1em}p{max-width:47em}small,.muted{color:var(--dim);font-size:.76em}.eyebrow{letter-spacing:.17em;text-transform:uppercase;color:var(--mint);font-size:.65em;font-weight:750}.hero{font-size:clamp(44px,8vw,102px)}strong{color:var(--mint)}.warning{color:var(--coral)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:1rem;margin:1.5rem 0}.panel{background:var(--panel);padding:1rem;border-top:3px solid var(--mint)}.panel p{margin:.45em 0}.metric{font-size:1.8em;font-weight:800}.bar{height:.63em;background:#30484d;border-radius:1em;margin:.3em 0 .75em;overflow:hidden}.bar span{display:block;width:var(--v);height:100%;background:var(--mint)}.bar.after span{background:var(--coral)}.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:.7em;padding:0;list-style:none;counter-reset:step}.flow li{background:var(--panel);padding:.9em;counter-increment:step}.flow li::before{content:"0" counter(step);display:block;color:var(--coral);font-weight:800;margin-bottom:.3em}.track{background:var(--panel);padding:.85em;margin:.65em 0;font-variant-numeric:tabular-nums}.table{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.8em}td,th{text-align:left;padding:.65em;border-bottom:1px solid #466166;vertical-align:top}th{color:var(--mint)}code{color:var(--mint);overflow-wrap:anywhere}
+nav{display:flex;gap:.7rem;justify-content:center;align-items:center;padding:.85rem;position:sticky;bottom:0;background:var(--bg);border-top:1px solid #466166}button{background:var(--panel);color:var(--ink);border:1px solid var(--dim);border-radius:.35em;padding:.55em .85em;font:inherit;font-size:.75em;cursor:pointer}button:disabled{opacity:.4;cursor:default}a{color:var(--mint)}:focus-visible{outline:3px solid var(--mint);outline-offset:4px}[hidden]{display:none}
+@media print{:root{color-scheme:light;--bg:#fff;--panel:#eff5f3;--ink:#102127;--dim:#354c50;--mint:#005c4b;--coral:#9a351c}body{font-size:13pt}main{padding:0}section,section[hidden]{display:block;min-height:0;break-after:page}section:last-child{break-after:auto}nav{display:none}h1,h2{font-size:32pt}.hero{font-size:42pt}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}@page{size:landscape;margin:16mm}}
+</style>
+<main>
+<section id="overview">
+<div class="eyebrow">Rook Dispatch · Leadership briefing</div>
+<h1 class="hero">Rook Dispatch product review</h1>
+<p>After 4.2 shortened the reply window, missed pings rose sharply. 4.3 prevents new timeout penalties and adds a bounded repair for damaged scores. The broader review identifies where Dispatch should invest next.</p>
+<div class="grid"><div class="panel"><div class="metric warning">18.0%</div>of pings missed after 4.2</div><div class="panel"><div class="metric"><strong>50</strong></div>concurrent score repair trials passed</div><div class="panel"><div class="metric"><strong>3</strong></div>features ranked by expected ROI</div></div>
+<small>Fictional Product School scenario. 4.3 is implemented in the local course code and proposed for rollout.</small>
+</section>
+<section id="evidence">
+<div class="eyebrow">01 · What we found</div>
+<h2>Misses rose after the reply window shrank</h2>
+<p>4.2 cut the wait from <b>90 to 60 seconds</b> and increased the weight of travel time so nearby responders would get more first offers.</p>
+<div class="grid">
+<div class="panel"><h3>Missed pings</h3><div>Before · 2.3%</div><div class="bar"><span style="--v:2.3%"></span></div><div>After · <b>18.0%</b></div><div class="bar after"><span style="--v:18%"></span></div></div>
+<div class="panel"><h3>Accepted pings</h3><div>Before · 76.6%</div><div class="bar"><span style="--v:76.6%"></span></div><div>After · <b>64.0%</b></div><div class="bar after"><span style="--v:64%"></span></div></div>
+</div>
+<small>Bars share a 0–100% scale. Before: 29 Jun–11 Aug, 1,085 pings. After: 12 Aug–6 Sep 2026, 611 pings. Source: Rook database, rook.pings.</small>
+</section>
+<section id="investigation">
+<div class="eyebrow">02 · How we found it</div>
+<h2>Offer records showed who got called first</h2>
+<div class="grid"><div class="panel"><h3>Support and interviews</h3><p>Handlers described offers expiring before a reply, then stretches with few or no pings.</p></div><div class="panel"><h3>Database</h3><p>We joined callouts to pings and identified the first recorded ping for each Eastgate incident.</p></div><div class="panel"><h3>Routing code</h3><p>We traced the timeout to its score deduction, then tested whether that deduction changed the next ranking.</p></div></div>
+<div class="table"><table><caption>Share of Eastgate callouts with the first recorded ping</caption><thead><tr><th scope="col">Responder</th><th scope="col">Before 4.2</th><th scope="col">From 12 Aug</th></tr></thead><tbody><tr><th scope="row">Meteor Mite</th><td>43 / 118 · 36%</td><td>6 / 57 · 11%</td></tr><tr><th scope="row">The Gale</th><td>55 / 118 · 47%</td><td>42 / 57 · 74%</td></tr></tbody></table></div>
+<p class="muted">Candidate lists, historical scores, and phone delivery times are missing. The offer records show the shift, but cannot separate timeout penalties from proximity, eligibility, or overrides.</p>
+</section>
+<section id="mechanism">
+<div class="eyebrow">03 · Root cause in the code</div>
+<h2>A timeout could reduce future opportunities</h2>
+<ol class="flow"><li><b>Offer expires</b><br>Dispatch waits 60 seconds.<br><code>offer.py:42</code></li><li><b>Score drops</b><br>4.2 counts the miss like a refusal and deducts 0.12.<br><code>offer.py:30</code></li><li><b>Rank can fall</b><br>Future callouts reuse that history score.<br><code>routing.py:40</code></li><li><b>Fewer chances to recover</b><br>A higher-ranked responder can accept first. Scores do not recover with time.<br><code>history.py:20</code></li></ol>
+<p>The code and simulation confirm the mechanism. Its contribution to individual production outcomes is still uncertain.</p>
+</section>
+<section id="fix">
+<div class="eyebrow">04 · Implemented in the course code</div>
+<h2>4.3 separates timely replies from silence</h2>
+<div class="table"><table><thead><tr><th scope="col">Outcome</th><th scope="col">What Dispatch does</th><th scope="col">4.2 score change</th><th scope="col">4.3 score change</th></tr></thead><tbody><tr><th scope="row">Accepted</th><td>Assigns callout</td><td>+0.08</td><td>+0.08</td></tr><tr><th scope="row">Declined</th><td>Tries next responder immediately</td><td>−0.12</td><td><strong>0.00</strong></td></tr><tr><th scope="row">Missed</th><td>Withdraws at 60s and tries next responder</td><td>−0.12</td><td><strong>0.00</strong></td></tr></tbody></table></div>
+<h3 style="margin-top:1.3em">Five simulated misses from a score of 0.50</h3>
+<div class="track"><b class="warning">4.2</b> · 0.50 → 0.38 → 0.26 → 0.14 → 0.02 → <b>0.00</b><br><small>Backup ranks first on the next callout.</small></div>
+<div class="track"><b><strong>4.3</strong></b> · 0.50 → 0.50 → 0.50 → 0.50 → 0.50 → <b>0.50</b><br><small>Original responder ranks first and accepts the next callout.</small></div>
+<small>A timely decline clears the miss streak. Three qualifying misses within an hour can trigger an advisory availability prompt. Responders remain eligible. Phone receipt and prompt delivery require app integration.</small>
+</section>
+<section id="recovery">
+<div class="eyebrow">05 · Implemented recovery</div>
+<h2>A targeted repair can restore a neutral score</h2>
+<ol class="flow"><li><b>Review</b><br>Meteor Mite, The Undertow, Farlight and Vesper were the strongest candidates across tested release cutoffs.</li><li><b>Preview</b><br>Compare the expected score with the current stored value. A mismatch rejects the batch.</li><li><b>Apply once</b><br>Raise a reviewed score below 0.50 to 0.50 and record the change.</li></ol>
+<p><strong>Verified locally:</strong> invalid batches made no writes, retries preserved newer scores, and acceptance credit survived 50 concurrent repair trials.</p>
+<p class="muted">Exact replay was left out because the rollout time and stored score snapshots could not be verified. Live scores have not been changed. The live operation needs durable transactional score and audit storage.</p>
+</section>
+<section id="product">
+<div class="eyebrow">06 · Product strengths and weaknesses</div>
+<h2>Dispatch moves offers quickly but leaves gaps in coverage and visibility</h2>
+<div class="table"><table><thead><tr><th scope="col">Product area</th><th scope="col">Strength</th><th scope="col">Weakness and improvement</th></tr></thead><tbody>
+<tr><th scope="row">Routing</th><td>Travel time, capability and automatic handoff.</td><td>First-ping shifts are hard to explain. Record eligibility, score components and overrides.</td></tr>
+<tr><th scope="row">Responder app</th><td>Simple accept or decline flow.</td><td>Send time alone cannot show how much time people had to reply. Capture receipt and response times.</td></tr>
+<tr><th scope="row">Handler console</th><td>Coverage cards, saved filters and manual overrides.</td><td>Small status text, silent filter resets and missed updates. Make status visible at a glance and offer opt-in alerts.</td></tr>
+<tr><th scope="row">Coverage</th><td>Handlers can intervene when routing falls short.</td><td>Partial capability matches can still rank. Define mandatory capabilities and an escalation path for coverage gaps.</td></tr>
+</tbody></table></div>
+</section>
+<section id="roadmap">
+<div class="eyebrow">07 · Expected return on investment</div>
+<h2>Three priorities for Dispatch</h2>
+<ol class="flow"><li><b>Callout trace and delivery receipts</b><br>High impact · Medium effort<br><small>Measure trace completeness and time to diagnose a missing ping.</small></li><li><b>Score recovery and availability confirmation</b><br>High impact for affected responders · Medium effort<br><small>Measure first offers among eligible responders and repeat misses.</small></li><li><b>Handler status and alerts</b><br>Medium impact · Low to medium effort<br><small>Measure missed status changes and filter-reset complaints.</small></li></ol>
+<p>Instrument the trace first, then use it to evaluate the 4.3 pilot. Monitor 90th-percentile assignment time and the share of callouts left unassigned.</p>
+<small>ROI is a directional judgment based on customer evidence and dependencies. Effort and financial return have not been quantified.</small>
+</section>
+<section id="sources">
+<div class="eyebrow">Reference · Sources</div>
+<h2>Evidence behind the briefing</h2>
+<ul><li>Release scope and support observations. <a href="https://app.notion.com/p/4-2-3eac8516f50181499fc4c5cf15c1ace7">4.2 release notes and comments</a></li><li>Customer accounts. <a href="https://app.notion.com/p/83a83da875364a1ab725d914482fad35">September handler interviews</a></li><li>Data analysis. Rook database tables <code>rook.callouts</code> and <code>rook.pings</code>.</li><li>Local code and proposed release. <code>00-rook/code/dispatch-routing/offer.py</code>, <code>history.py</code>, <code>routing.py</code>, <code>config.py</code>, and <code>CHANGELOG.md</code>.</li></ul>
+</section>
+</main>
+<nav aria-label="Presentation controls"><button id="prev" type="button">Previous</button><span id="position" aria-live="polite"></span><button id="next" type="button">Next</button><button id="print" type="button">Print / PDF</button></nav>
+<script>
+const slides = [...document.querySelectorAll('main > section')];
+const prev = document.querySelector('#prev');
+const next = document.querySelector('#next');
+const position = document.querySelector('#position');
+let index = 0;
+function show(target) {
+  index = Math.max(0, Math.min(slides.length - 1, target));
+  slides.forEach((slide, i) => { slide.hidden = i !== index; });
+  prev.disabled = index === 0;
+  next.disabled = index === slides.length - 1;
+  position.textContent = (index + 1) + ' / ' + slides.length;
+  history.replaceState(null, '', '#' + slides[index].id);
+  window.scrollTo(0, 0);
+}
+function fromHash() { show(slides.findIndex(slide => '#' + slide.id === location.hash)); }
+prev.addEventListener('click', () => show(index - 1));
+next.addEventListener('click', () => show(index + 1));
+document.querySelector('#print').addEventListener('click', () => window.print());
+window.addEventListener('hashchange', fromHash);
+document.addEventListener('keydown', event => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  const targets = {ArrowRight:index+1, ArrowLeft:index-1, Home:0, End:slides.length-1};
+  if (Object.hasOwn(targets, event.key)) {
+    event.preventDefault();
+    show(targets[event.key]);
+  }
+});
+fromHash();
+</script>
+</html>
