@@ -62,3 +62,9 @@ Across all 147 support tickets, 30 reported few or no pings and 15 reported offe
 Interviews surfaced hard-to-notice live callouts and small status text. Tickets surfaced account access, console performance, exports, training, and duplicate pings that the four interviewees did not raise.
 Saved filters drew 14 requests or complaints and two thank-yous. Ambrose explained the tradeoff: less setup time, but silent resets undermine trust.
 The two sources describe symptoms and their context. Neither establishes why a specific responder received fewer offers.
+
+Module 3 grouped all 1,696 recorded pings into 160 responder-week rows in 03-rewind/weekly-pings.md, including zero-ping weeks and a split at August 12 local midnight.
+Acceptance fell from 831 of 1,085 (76.6%) before August 12 to 391 of 611 (64.0%) from that date. It reached 72.7% in the final recorded week.
+On August 12, 7 of 25 pings timed out and the first ticket about an offer moving on too quickly arrived. The first few-or-no-pings ticket arrived August 17.
+Farlight had 11–13 weekly offers before release week, then 10 with four misses in release week, followed by three, one, and zero offers.
+The ping records do not show who was eligible or how they ranked for offers they never received. The exact rollout time is unavailable.
