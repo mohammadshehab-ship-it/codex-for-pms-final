@@ -1,0 +1,37 @@
+const {initial,step,rank}=require('./engine.js');
+const assert=require('node:assert/strict');
+let passed=0;const results=[];
+function test(name,fn){try{fn();results.push({name,pass:true});passed++;console.log('PASS '+name);}catch(e){results.push({name,pass:false,error:e.message});console.error('FAIL '+name+' '+e.message);process.exitCode=1;}}
+const act=(s,actor)=>step(s,{type:'ACTOR',actor});
+const op=(s,t,extra={})=>step(s,{type:t,...extra});
+function repair(s){s=act(s,'operator');s=op(s,'PREVIEW');return op(s,'APPROVE');}
+function miss(s){s=op(s,'CALLOUT');assert.equal(s.call.offer.name,'Farlight');return op(s,'TICK',{seconds:60});}
+function finish(s){return op(s,'TICK',{seconds:60});}
+test('End-to-end: review, readiness, repair, callout, assignment and credit',()=>{let s=op(initial(),'REQUEST');s=act(s,'farlight');s=op(s,'AVAILABLE',{value:true});assert.equal(s.score,.2);assert.equal(s.confirmed,0);s=repair(s);assert.equal(s.score,.5);s=op(s,'CALLOUT');s=act(s,'farlight');s=op(s,'ANSWER',{value:'taken'});assert.equal(s.call.assignee,'Farlight');assert.equal(s.score,.58);assert.equal(s.engaged,true);assert.equal(s.audit.length,1);});
+test('Actual ranking formula and 45-minute horizon',()=>{assert.equal(rank(.5,0),.875);assert.equal(rank(.5,45),.275);assert.equal(rank(.5,90),.275);assert.equal(rank(.5,0,.5),.8);});
+test('Closer competitor accepts first even after repair',()=>{let s=repair(initial('competitor'));s=op(s,'CALLOUT');assert.equal(s.call.offer.name,'Beacon');s=op(s,'ANSWER',{value:'taken',demo:true});assert.equal(s.call.assignee,'Beacon');assert.equal(s.score,.5);assert.equal(s.call.outcomes.length,1);});
+test('Decline immediately advances, clears streak and preserves score',()=>{let s=initial();s.misses=[0];s.cooldown=3600;s=act(op(s,'CALLOUT'),'farlight');s=op(s,'ANSWER',{value:'turned down'});assert.equal(s.call.offer.name,'Beacon');assert.equal(s.score,.2);assert.equal(s.misses.length,0);assert.equal(s.cooldown,0);});
+test('Three qualifying misses deliver advisory without pausing routing',()=>{let s=initial();s=finish(miss(s));s=finish(miss(s));assert.equal(s.prompt,null);s=miss(s);assert.equal(s.prompt.status,'delivered');assert.equal(s.available,true);assert.equal(s.call.offer.name,'Beacon');assert.equal(s.score,.2);});
+for(const receipt of ['missing','late','invalid'])test(receipt+' receipt breaks streak and adds no penalty',()=>{let s=initial();s.misses=[0,0];s.receipt=receipt;s=miss(s);assert.equal(s.misses.length,0);assert.equal(s.prompt,null);assert.equal(s.score,.2);});
+test('Exactly 30 seconds remaining qualifies',()=>{let s=op(initial(),'CALLOUT');s.call.offer.receipt=30;s=op(s,'TICK',{seconds:60});assert.equal(s.misses.length,1);});
+test('29 seconds remaining does not qualify',()=>{let s=op(initial(),'CALLOUT');s.call.offer.receipt=31;s=op(s,'TICK',{seconds:60});assert.equal(s.misses.length,0);});
+test('Rolling hour removes old misses',()=>{let s=finish(miss(initial()));s=op(s,'TICK',{seconds:3601});s=miss(s);assert.equal(s.misses.length,1);assert.equal(s.prompt,null);});
+test('Cooldown suppresses repeated prompt',()=>{let s=initial();for(let i=0;i<3;i++)s=finish(miss(s));const id=s.prompt.id;s=miss(s);assert.equal(s.prompt.id,id);assert.equal(s.misses.length,0);});
+test('Readiness resolves prompt and clears cooldown without credit',()=>{let s=initial();for(let i=0;i<3;i++)s=finish(miss(s));s=act(s,'farlight');s=op(s,'AVAILABLE',{value:true});assert.equal(s.prompt.status,'resolved');assert.equal(s.cooldown,0);assert.equal(s.score,.2);});
+test('Missing score cannot be repaired',()=>{let s=repair(initial('missing'));assert.equal(s.score,null);assert.equal(s.review,'needed');assert.equal(s.audit.length,0);});
+test('Above-neutral score is untouched',()=>{let s=repair(initial('high'));assert.equal(s.score,.72);assert.equal(s.audit.length,0);});
+test('Duplicate requests and approvals have one effect',()=>{let s=op(op(initial(),'REQUEST'),'REQUEST');assert.equal(s.review,'requested');s=repair(s);s=op(s,'APPROVE');assert.equal(s.score,.5);assert.equal(s.audit.length,1);});
+test('Concurrent credit invalidates repair preview without losing credit',()=>{let s=op(act(initial(),'operator'),'PREVIEW');s=op(s,'CONCURRENT');s=op(s,'APPROVE');assert.equal(s.score,.28);assert.equal(s.review,'needed');assert.equal(s.audit.length,0);s=op(op(s,'PREVIEW'),'APPROVE');assert.equal(s.score,.5);});
+test('Version prevents equal-value ABA stale write',()=>{let s=op(act(initial(),'operator'),'PREVIEW');s.sv+=2;s=op(s,'APPROVE');assert.equal(s.review,'needed');assert.equal(s.score,.2);});
+test('Failed repair retries once with no partial audit',()=>{let s=repair(initial('failure'));assert.equal(s.score,.2);assert.equal(s.audit.length,0);s=op(s,'APPROVE');assert.equal(s.score,.5);assert.equal(s.audit.length,1);});
+test('Serialized restart retains duplicate protection',()=>{let s=JSON.parse(JSON.stringify(repair(initial())));s=op(s,'APPROVE');assert.equal(s.score,.5);assert.equal(s.audit.length,1);});
+test('Linda and Farlight cannot approve scores',()=>{for(const actor of ['linda','farlight']){let s=op(act(initial(),'operator'),'PREVIEW');s=act(s,actor);s=op(s,'APPROVE');assert.equal(s.score,.2);assert.equal(s.audit.length,0);}});
+test('Stale availability never overwrites a newer unavailable choice',()=>{let s=act(initial('availability'),'farlight');s=op(s,'NEWER_UNAVAILABLE');s=op(s,'AVAILABLE',{value:true});assert.equal(s.available,false);s=op(op(s,'RELOAD'),'AVAILABLE',{value:true});assert.equal(s.available,true);});
+test('Availability save failure retains prior state and timestamp',()=>{let s=initial();s=op(s,'AVAILABLE',{value:false,fail:true});assert.equal(s.available,true);assert.equal(s.confirmed,null);});
+test('Failed prompt delivery never blocks next candidate; retry keeps ID',()=>{let s=initial('promptFailure');for(let i=0;i<2;i++)s=finish(miss(s));s=miss(s);assert.equal(s.prompt.status,'failed');assert.equal(s.call.offer.name,'Beacon');const id=s.prompt.id;s=op(s,'RETRY_PROMPT');assert.equal(s.prompt.id,id);assert.equal(s.prompt.status,'delivered');});
+test('Accept at 59 seconds succeeds; at 60 expired offer cannot accept',()=>{let s=act(op(initial(),'CALLOUT'),'farlight');s=op(s,'TICK',{seconds:59});s=op(s,'ANSWER',{value:'taken'});assert.equal(s.score,.28);let t=act(op(initial(),'CALLOUT'),'farlight');const id=t.call.offer.id;t=op(t,'TICK',{seconds:60});t=op(t,'ANSWER',{value:'taken',offerId:id});assert.equal(t.score,.2);assert.equal(t.call.offer.name,'Beacon');});
+test('Duplicate acceptance earns one credit; credit capped at 1',()=>{let s=initial();s.score=.98;s=act(op(s,'CALLOUT'),'farlight');s=op(s,'ANSWER',{value:'taken'});s=op(s,'ANSWER',{value:'taken'});assert.equal(s.score,1);assert.equal(s.call.outcomes.length,1);});
+test('Unavailable responder excluded; all misses end unassigned',()=>{let s=op(initial(),'AVAILABLE',{value:false});s=op(s,'CALLOUT');assert.equal(s.call.candidates.length,1);assert.equal(s.call.offer.name,'Beacon');s=op(s,'TICK',{seconds:60});assert.equal(s.call.status,'unassigned');});
+test('Handler cannot answer Farlight offer',()=>{let s=op(initial(),'CALLOUT');s=op(s,'ANSWER',{value:'taken'});assert.equal(s.call.status,'offered');assert.equal(s.score,.2);});
+console.log(`${passed}/${results.length} passed`);
+require('node:fs').writeFileSync(require('node:path').join(__dirname,'test-results.json'),JSON.stringify({scope:'Local deterministic state model; not production integration or concurrency validation',passed,total:results.length,results},null,2));

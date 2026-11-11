@@ -1,0 +1,119 @@
+{
+  "scope": "Local deterministic state model; not production integration or concurrency validation",
+  "passed": 28,
+  "total": 28,
+  "results": [
+    {
+      "name": "End-to-end: review, readiness, repair, callout, assignment and credit",
+      "pass": true
+    },
+    {
+      "name": "Actual ranking formula and 45-minute horizon",
+      "pass": true
+    },
+    {
+      "name": "Closer competitor accepts first even after repair",
+      "pass": true
+    },
+    {
+      "name": "Decline immediately advances, clears streak and preserves score",
+      "pass": true
+    },
+    {
+      "name": "Three qualifying misses deliver advisory without pausing routing",
+      "pass": true
+    },
+    {
+      "name": "missing receipt breaks streak and adds no penalty",
+      "pass": true
+    },
+    {
+      "name": "late receipt breaks streak and adds no penalty",
+      "pass": true
+    },
+    {
+      "name": "invalid receipt breaks streak and adds no penalty",
+      "pass": true
+    },
+    {
+      "name": "Exactly 30 seconds remaining qualifies",
+      "pass": true
+    },
+    {
+      "name": "29 seconds remaining does not qualify",
+      "pass": true
+    },
+    {
+      "name": "Rolling hour removes old misses",
+      "pass": true
+    },
+    {
+      "name": "Cooldown suppresses repeated prompt",
+      "pass": true
+    },
+    {
+      "name": "Readiness resolves prompt and clears cooldown without credit",
+      "pass": true
+    },
+    {
+      "name": "Missing score cannot be repaired",
+      "pass": true
+    },
+    {
+      "name": "Above-neutral score is untouched",
+      "pass": true
+    },
+    {
+      "name": "Duplicate requests and approvals have one effect",
+      "pass": true
+    },
+    {
+      "name": "Concurrent credit invalidates repair preview without losing credit",
+      "pass": true
+    },
+    {
+      "name": "Version prevents equal-value ABA stale write",
+      "pass": true
+    },
+    {
+      "name": "Failed repair retries once with no partial audit",
+      "pass": true
+    },
+    {
+      "name": "Serialized restart retains duplicate protection",
+      "pass": true
+    },
+    {
+      "name": "Linda and Farlight cannot approve scores",
+      "pass": true
+    },
+    {
+      "name": "Stale availability never overwrites a newer unavailable choice",
+      "pass": true
+    },
+    {
+      "name": "Availability save failure retains prior state and timestamp",
+      "pass": true
+    },
+    {
+      "name": "Failed prompt delivery never blocks next candidate; retry keeps ID",
+      "pass": true
+    },
+    {
+      "name": "Accept at 59 seconds succeeds; at 60 expired offer cannot accept",
+      "pass": true
+    },
+    {
+      "name": "Duplicate acceptance earns one credit; credit capped at 1",
+      "pass": true
+    },
+    {
+      "name": "Unavailable responder excluded; all misses end unassigned",
+      "pass": true
+    },
+    {
+      "name": "Handler cannot answer Farlight offer",
+      "pass": true
+    }
+  ]
+}
